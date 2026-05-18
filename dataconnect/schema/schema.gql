@@ -1,45 +1,172 @@
-type User @table {
-  username: String!
-  passwordHash: String!
-  role: String!
-  createdAt: Timestamp!
-  firstName: String
-  lastName: String
-  email: String
-  phoneNumber: String
+# SchoolERP Firebase Data Connect Relational Schema (PostgreSQL)
+# Translated directly from legacy MySQL school_erp.sql dump structures.
+
+# 1. Accounts & Ledgers (Legacy table: `account`)
+type Account @table {
+  accountId: Int! @primaryKey
+  accountName: String!
+  printName: String
+  groupAcc: String!
+  opBal: Int!
+  drCr: String!
   address: String
+  city: String
+  state: String
+  email: String
+  phone: Int
+  mobile: Int
+  contactPer: String
+  birthdayOn: Date
+  annivOn: Date
+  bankName: String
+  bankAccNo: Int
+  chequePName: String
 }
 
-type Course @table {
-  courseCode: String!
-  courseName: String!
-  description: String!
-  credits: Int!
-  createdAt: Timestamp!
-  syllabusUrl: String
-  teacher: User
+# 2. Account Grouping (Legacy table: `account_group`)
+type AccountGroup @table {
+  accountGroupId: Int! @primaryKey
+  accountGroupName: String!
 }
 
-type Enrollment @table {
-  enrollmentDate: Date!
-  grade: String!
-  status: String
-  student: User!
-  course: Course!
+# 3. System Administrators (Legacy table: `admin`)
+type Admin @table {
+  adminId: Int! @primaryKey
+  adminEmail: String!
+  adminPassword: String!
+  adminName: String!
 }
 
+# 4. Academic Class Units (Legacy table: `class`)
+type Class @table {
+  classId: Int! @primaryKey
+  classLevel: Int!
+  prefix: String
+  startFrom: Date
+  incharge: String
+}
+
+# 5. Class Sections (Legacy table: `section`)
+type Section @table {
+  sectionId: Int! @primaryKey
+  sectionName: String!
+}
+
+# 6. Student Roster Attendance (Legacy table: `attendance`)
 type Attendance @table {
-  attendanceDate: Date!
-  status: String!
-  student: User!
-  course: Course!
+  attendanceId: UUID! @default(expr: "uuidv4") @primaryKey
+  date: Date!
+  classLevel: String!
+  sectionName: String!
+  studentId: Int!
+  status: String! # e.g. "P" (Present), "A" (Absent), "L" (Late)
 }
 
-type Announcement @table {
-  title: String!
-  content: String!
-  createdAt: Timestamp!
-  audience: String!
-  expirationDate: Date
-  author: User
+# 7. Fee Billing Configurations (Legacy table: `fees_head`)
+type FeesHead @table {
+  feesHeadId: Int! @primaryKey
+  feesHeading: String!
+  groupName: String!
+  accountName: String!
+  frequency: String! # e.g. "monthly", "annual", "one_time"
+  january: Int
+  february: Int
+  march: Int
+  april: Int
+  may: Int
+  june: Int
+  july: Int
+  august: Int
+  september: Int
+  october: Int
+  november: Int
+  december: Int
+}
+
+# 8. Fees Structural Pricing (Legacy table: `fees_plan`)
+type FeesPlan @table {
+  feesPlanId: UUID! @default(expr: "uuidv4") @primaryKey
+  feesHeading: String!
+  value: Int!
+  categoryName: String!
+  classLevel: String!
+}
+
+# 9. Payment Collection Logs (Legacy table: `fees_reciept`)
+type FeesReceipt @table {
+  recieptId: Int! @primaryKey
+  date: Date!
+  recieptNo: Int!
+  admissionNo: Int!
+  jan: Int!
+  feb: Int!
+  mar: Int!
+  apr: Int!
+  may: Int!
+  jun: Int!
+  jul: Int!
+  aug: Int!
+  sep: Int!
+  oct: Int!
+  nov: Int!
+  dece: Int!
+}
+
+# 10. Front Office Visits & Logins (Legacy table: `gatepass`)
+type Gatepass @table {
+  gatepassId: Int! @primaryKey
+  name: String!
+  photoUrl: String
+  profession: String
+  address: String
+  contactNo: Int!
+  purpose: String!
+  dateOfVisit: Date!
+  timeOfVisit: Timestamp!
+  expectedReturnDate: Date
+  expectedReturnTime: Timestamp
+  proofOfIdentity: String
+  itemsRetained: String
+}
+
+# 11. Transport Routes (Legacy table: `route`)
+type Route @table {
+  routeId: Int! @primaryKey
+  routeName: String!
+  freq: String!
+  january: Int
+  february: Int
+  march: Int
+  april: Int
+  may: Int
+  june: Int
+  july: Int
+  august: Int
+  september: Int
+  october: Int
+  november: Int
+  december: Int
+}
+
+# 12. Corporate School Profile (Legacy table: `organisation_info`)
+type OrganisationInfo @table {
+  orgId: Int! @primaryKey
+  name: String!
+  address1: String!
+  address2: String
+  city: String!
+  phoneNo: Int!
+  faxNo: Int
+  mobile: Int!
+  email: String!
+  website: String
+  contactPerson: String
+  panNo: String
+  affiliation: String
+  licenseNo: Int
+  serviceTaxNo: Int
+  sessionStart: Date!
+  sessionEnd: Date!
+  diseCode: Int
+  schoolCode: Int
 }
