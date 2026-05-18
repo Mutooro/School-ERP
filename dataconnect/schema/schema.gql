@@ -1,0 +1,45 @@
+type User @table {
+  username: String!
+  passwordHash: String!
+  role: String!
+  createdAt: Timestamp!
+  firstName: String
+  lastName: String
+  email: String
+  phoneNumber: String
+  address: String
+}
+
+type Course @table {
+  courseCode: String!
+  courseName: String!
+  description: String!
+  credits: Int!
+  createdAt: Timestamp!
+  syllabusUrl: String
+  teacher: User
+}
+
+type Enrollment @table {
+  enrollmentDate: Date!
+  grade: String!
+  status: String
+  student: User!
+  course: Course!
+}
+
+type Attendance @table {
+  attendanceDate: Date!
+  status: String!
+  student: User!
+  course: Course!
+}
+
+type Announcement @table {
+  title: String!
+  content: String!
+  createdAt: Timestamp!
+  audience: String!
+  expirationDate: Date
+  author: User
+}
