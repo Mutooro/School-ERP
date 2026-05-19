@@ -2,17 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import NavigationShell from "@/components/NavigationShell";
 import { 
-  GraduationCap, 
   BookOpen, 
   Calendar, 
   DollarSign, 
   Award, 
   CheckCircle, 
   MessageSquare, 
-  ArrowLeft, 
   Loader2, 
   Send,
   Clock,
@@ -23,11 +20,19 @@ import {
 
 export default function StudentDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   
-  // Dynamic API Student State
-  const [student, setStudent] = useState<any>(null);
+  // Dynamic API Student State - pre-populated for instant responsive rendering
+  const [student, setStudent] = useState<any>({
+    id: "MM-232",
+    firstName: "Martin",
+    lastName: "Mutooro",
+    classLevel: "Grade 10-A",
+    rollNo: 23,
+    gpa: 3.82,
+    attendance: "96.4%",
+    outstandingFees: 150.00,
+    academicYear: "2026-27"
+  });
   
   // Interactive States
   const [selectedDay, setSelectedDay] = useState("Monday");
@@ -39,21 +44,7 @@ export default function StudentDashboard() {
   const [aiLoading, setAiLoading] = useState(false);
   const [feeStatus, setFeeStatus] = useState("Pending"); // "Pending" | "Processing" | "Paid"
 
-  // Auth Protection Guard
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) {
-        // Not logged in, redirect to login page
-        router.push("/");
-      } else {
-        setUser(currentUser);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [router]);
-
-  // Fetch Student Data from Node.js Cloud Function
+  // Fetch Student Data from Node.js Cloud Function if online
   useEffect(() => {
     const fetchStudentData = async () => {
       try {
@@ -65,19 +56,7 @@ export default function StudentDashboard() {
           console.log("🔥 Successfully loaded student data from Cloud Function!", data.student);
         }
       } catch (err) {
-        console.warn("⚠️ Could not connect to local Cloud Functions emulator. Falling back to client-side data.", err);
-        // Resilient Fallback mock data
-        setStudent({
-          id: "MM-232",
-          firstName: "Martin",
-          lastName: "Mutooro",
-          classLevel: "Grade 10-A",
-          rollNo: 23,
-          gpa: 3.82,
-          attendance: "96.4%",
-          outstandingFees: 150.00,
-          academicYear: "2026-27"
-        });
+        console.warn("⚠️ Could not connect to local Cloud Functions emulator. Using high-fidelity local states.", err);
       }
     };
 
@@ -118,17 +97,6 @@ export default function StudentDashboard() {
     }, 1500);
   };
 
-  if (loading || !student) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-zinc-950 text-white">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-indigo-500" />
-          <p className="text-zinc-400 font-medium">Verifying Student Credentials...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Dashboard Data Mockups
   const timetable: any = {
     Monday: [
@@ -167,44 +135,12 @@ export default function StudentDashboard() {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-zinc-950 text-zinc-100 font-sans selection:bg-indigo-500/30 pb-20 relative">
-      
+    <NavigationShell requiredRole="student">
       {/* Decorative Blob */}
-      <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none"></div>
-
-      {/* Top Header */}
-      <nav className="sticky top-0 z-40 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => router.push("/")}
-            className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all cursor-pointer"
-          >
-            <ArrowLeft className="h-4.5 w-4.5" />
-          </button>
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-600 to-sky-600 flex items-center justify-center text-white font-bold">
-              <GraduationCap className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-bold text-base text-white">Student Portal</span>
-              <span className="ml-2 text-xxs text-zinc-500">Simpkins High</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setChatOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-white px-4.5 py-2 text-sm font-semibold transition-all cursor-pointer"
-          >
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span>AI Study Copilot</span>
-          </button>
-        </div>
-      </nav>
+      <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none z-0"></div>
 
       {/* Main Content Layout */}
-      <main className="p-6 md:p-8 max-w-7xl mx-auto space-y-8">
+      <main className="p-6 md:p-8 space-y-8 relative z-10 flex-1">
         
         {/* Profile Card & Greetings */}
         <div className="bg-gradient-to-r from-zinc-900/60 via-zinc-900/40 to-transparent border border-zinc-800 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
@@ -218,7 +154,7 @@ export default function StudentDashboard() {
             </div>
             <div className="space-y-1.5">
               <h2 className="text-2xl font-extrabold text-white tracking-tight">
-                {student.firstName} {student.lastName}
+                Welcome back, {student.firstName}!
               </h2>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
                 <span className="text-xxs px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 font-semibold">
@@ -232,6 +168,16 @@ export default function StudentDashboard() {
                 </span>
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setChatOpen(true)}
+              className="flex items-center gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-200 hover:text-white px-4.5 py-2.5 text-xs font-bold transition-all cursor-pointer shadow-lg shadow-indigo-500/5"
+            >
+              <Sparkles className="h-4 w-4 text-amber-400" />
+              <span>AI Study Copilot</span>
+            </button>
           </div>
         </div>
 
@@ -320,7 +266,7 @@ export default function StudentDashboard() {
                 <Sparkles className="h-5 w-5 text-amber-400 animate-pulse" />
               </div>
               <p className="text-zinc-400 text-xxs leading-relaxed">
-                Unlock instant study assistant tips, syllabus outlines, and customized prep guides generated directly via Gemini.
+                Unlock instant study assistant tips, syllabus outlines, and prep guides generated via Gemini.
               </p>
             </div>
             <button 
@@ -471,7 +417,7 @@ export default function StudentDashboard() {
               
               {aiLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-zinc-900 border border-zinc-850 p-3 rounded-2xl rounded-bl-none flex items-center gap-2 text-zinc-400 text-xs">
+                  <div className="bg-zinc-900 border border-zinc-855 p-3 rounded-2xl rounded-bl-none flex items-center gap-2 text-zinc-400 text-xs">
                     <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
                     <span>Thinking...</span>
                   </div>
@@ -487,7 +433,7 @@ export default function StudentDashboard() {
                   placeholder="Ask about your grades, schedule, or syllabus..."
                   value={chatMessage}
                   onChange={(e) => setChatMessage(e.target.value)}
-                  className="w-full pl-4 pr-12 py-3 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/30 rounded-2xl text-xs text-white transition-all outline-none"
+                  className="w-full pl-4 pr-12 py-3 bg-zinc-900 border border-zinc-850 hover:border-zinc-700 focus:border-indigo-500/70 focus:ring-1 focus:ring-indigo-500/30 rounded-2xl text-xs text-white transition-all outline-none"
                 />
                 <button 
                   type="submit"
@@ -501,7 +447,6 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
-
-    </div>
+    </NavigationShell>
   );
 }
